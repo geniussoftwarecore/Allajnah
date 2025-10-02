@@ -46,7 +46,7 @@ This is an Arabic electronic complaints management system built with Flask (back
 
 ### Port Configuration
 - **Frontend (Development)**: Port 5000 (0.0.0.0)
-- **Backend (Development)**: Port 8000 (0.0.0.0)
+- **Backend (Development)**: Port 8000 (localhost)
 - **Frontend proxies /api requests to backend on port 8000**
 
 ### Running Locally
@@ -79,15 +79,17 @@ The deployment process:
 
 ## Recent Changes (Oct 2, 2025)
 - Imported from GitHub and configured for Replit environment
-- Installed Python 3.11 and Node.js 20
+- Installed Python 3.11 and Node.js 20 modules
+- Installed Python backend dependencies using uv (Flask, SQLAlchemy, PyJWT, Gunicorn)
+- Installed frontend dependencies using pnpm
 - Configured Vite to allow all hosts for Replit proxy support
-- Set up backend on port 8000 with CORS enabled
-- Set up frontend on port 5000 with API proxy
-- Added .gitignore for Python and Node.js
-- Configured deployment with Gunicorn for production
-- Created WSGI entry point for production deployment
-- **Fixed SQLAlchemy context error**: Created single shared database instance in `src/database/db.py` to prevent multiple SQLAlchemy instances (was causing RuntimeError when accessing database)
-- **Resolved duplicate User model**: Removed outdated User model from `models/user.py`, all routes now use the correct User model from `models/complaint.py`
+- Set up backend on port 8000 (localhost) with CORS enabled
+- Set up frontend on port 5000 (0.0.0.0) with API proxy
+- Updated .gitignore to include .pythonlibs/, uv.lock, and pyproject.toml for Replit environment
+- Configured autoscale deployment with build and run commands:
+  - Build: Builds frontend with Vite and copies to backend static folder
+  - Run: Serves app with Gunicorn on port 5000
+- Both workflows tested and running successfully
 
 ## User Preferences
 - Language: Arabic (RTL interface)
