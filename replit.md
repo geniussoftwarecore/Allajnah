@@ -86,6 +86,8 @@ The deployment process:
 - Added .gitignore for Python and Node.js
 - Configured deployment with Gunicorn for production
 - Created WSGI entry point for production deployment
+- **Fixed SQLAlchemy context error**: Created single shared database instance in `src/database/db.py` to prevent multiple SQLAlchemy instances (was causing RuntimeError when accessing database)
+- **Resolved duplicate User model**: Removed outdated User model from `models/user.py`, all routes now use the correct User model from `models/complaint.py`
 
 ## User Preferences
 - Language: Arabic (RTL interface)

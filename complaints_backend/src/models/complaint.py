@@ -1,8 +1,6 @@
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import uuid
-
-db = SQLAlchemy()
+from src.database.db import db
 
 class Role(db.Model):
     __tablename__ = 'roles'

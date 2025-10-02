@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from flask import Flask, send_from_directory
 from flask_cors import CORS
-from src.models.complaint import db
+from src.database.db import db
 from src.routes.user import user_bp
 from src.routes.complaint import complaint_bp
 from src.routes.auth import auth_bp
