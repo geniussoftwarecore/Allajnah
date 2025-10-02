@@ -11,9 +11,8 @@ import NewComplaint from './components/NewComplaint';
 import Reports from './components/Reports';
 import './App.css';
 
-// Configure axios base URL
+// Axios will use Vite's proxy configuration for /api requests
 import axios from 'axios';
-axios.defaults.baseURL = 'http://localhost:5000';
 
 function AppContent() {
   const { isAuthenticated } = useAuth();
