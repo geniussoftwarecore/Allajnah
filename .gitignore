@@ -23,6 +23,9 @@ MANIFEST
 venv/
 ENV/
 env/
+.pythonlibs/
+uv.lock
+pyproject.toml
 
 # Node
 node_modules/
