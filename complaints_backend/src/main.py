@@ -4,6 +4,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from flask import Flask, send_from_directory
+from flask_cors import CORS
 from src.models.complaint import db
 from src.routes.user import user_bp
 from src.routes.complaint import complaint_bp
@@ -11,6 +12,7 @@ from src.routes.auth import auth_bp
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
+CORS(app)
 
 app.register_blueprint(user_bp, url_prefix='/api')
 app.register_blueprint(complaint_bp, url_prefix='/api')
@@ -41,4 +43,4 @@ def serve(path):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='localhost', port=8000, debug=True)
