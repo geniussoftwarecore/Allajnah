@@ -56,3 +56,8 @@ externalPort = 80
 [[ports]]
 localPort = 40447
 externalPort = 3000
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["gunicorn", "--chdir", "complaints_backend", "--bind", "0.0.0.0:5000", "--reuse-port", "wsgi:app"]
+build = ["bash", "-c", "cd complaints_frontend && pnpm install && pnpm build && cp -r dist/* ../complaints_backend/src/static/"]
