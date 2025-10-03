@@ -34,11 +34,17 @@ class User(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
     
+    # 2FA fields
+    two_factor_enabled = db.Column(db.Boolean, default=False)
+    two_factor_secret = db.Column(db.String(32))
+    
     # Relationships
     complaints_submitted = db.relationship('Complaint', foreign_keys='Complaint.trader_id', backref='trader', lazy=True)
     complaints_assigned = db.relationship('Complaint', foreign_keys='Complaint.assigned_to_committee_id', backref='assigned_committee_member', lazy=True)
     comments = db.relationship('ComplaintComment', backref='author', lazy=True)
     notifications = db.relationship('Notification', backref='recipient', lazy=True)
+    audit_logs_performed = db.relationship('AuditLog', foreign_keys='AuditLog.performed_by_id', backref='performed_by', lazy=True)
+    audit_logs_affected = db.relationship('AuditLog', foreign_keys='AuditLog.affected_user_id', backref='affected_user', lazy=True)
     
     def to_dict(self):
         return {
@@ -52,7 +58,8 @@ class User(db.Model):
             'role_name': self.role.role_name if self.role else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
-            'is_active': self.is_active
+            'is_active': self.is_active,
+            'two_factor_enabled': self.two_factor_enabled
         }
 
 class ComplaintCategory(db.Model):
@@ -191,5 +198,33 @@ class Notification(db.Model):
             'message': self.message,
             'type': self.type,
             'is_read': self.is_read,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+class AuditLog(db.Model):
+    __tablename__ = 'audit_logs'
+    
+    log_id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    action_type = db.Column(db.String(100), nullable=False)  # e.g., 'role_change', 'user_created', 'user_deleted', 'status_change'
+    performed_by_id = db.Column(db.String(36), db.ForeignKey('users.user_id'), nullable=False)
+    affected_user_id = db.Column(db.String(36), db.ForeignKey('users.user_id'))
+    old_value = db.Column(db.Text)
+    new_value = db.Column(db.Text)
+    description = db.Column(db.Text)
+    ip_address = db.Column(db.String(45))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def to_dict(self):
+        return {
+            'log_id': self.log_id,
+            'action_type': self.action_type,
+            'performed_by_id': self.performed_by_id,
+            'performed_by_name': self.performed_by.full_name if self.performed_by else None,
+            'affected_user_id': self.affected_user_id,
+            'affected_user_name': self.affected_user.full_name if self.affected_user else None,
+            'old_value': self.old_value,
+            'new_value': self.new_value,
+            'description': self.description,
+            'ip_address': self.ip_address,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }

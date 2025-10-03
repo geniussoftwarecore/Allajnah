@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from src.database.db import db
-from src.models.complaint import User, Role
+from src.models.complaint import User, Role, AuditLog
 from werkzeug.security import generate_password_hash
 from src.routes.auth import token_required, role_required
 from datetime import datetime
@@ -169,9 +169,9 @@ def get_all_users_admin(current_user):
 
 @user_bp.route('/admin/users/<user_id>/role', methods=['PUT'])
 @token_required
-@role_required(['Technical Committee', 'Higher Committee'])
+@role_required(['Higher Committee'])
 def update_user_role(current_user, user_id):
-    """Admin endpoint to update a user's role"""
+    """Higher Committee ONLY endpoint to update a user's role - SECURITY CRITICAL"""
     try:
         data = request.get_json()
         
@@ -196,10 +196,22 @@ def update_user_role(current_user, user_id):
         old_role_name = user.role.role_name
         user.role_id = new_role.role_id
         user.updated_at = datetime.utcnow()
+        
+        # Create audit log entry
+        audit_log = AuditLog(
+            action_type='role_change',
+            performed_by_id=current_user.user_id,
+            affected_user_id=user.user_id,
+            old_value=old_role_name,
+            new_value=new_role.role_name,
+            description=f'تم تغيير دور المستخدم {user.full_name} من "{old_role_name}" إلى "{new_role.role_name}"',
+            ip_address=request.remote_addr
+        )
+        db.session.add(audit_log)
         db.session.commit()
         
         return jsonify({
-            'message': f'User role updated from {old_role_name} to {new_role.role_name}',
+            'message': f'تم تحديث دور المستخدم من "{old_role_name}" إلى "{new_role.role_name}" بنجاح',
             'user': user.to_dict()
         }), 200
         
@@ -223,16 +235,67 @@ def toggle_user_status(current_user, user_id):
             return jsonify({'message': 'Cannot modify your own account status'}), 403
         
         # Toggle the is_active status
+        old_status = 'نشط' if user.is_active else 'غير نشط'
         user.is_active = not user.is_active
+        new_status = 'نشط' if user.is_active else 'غير نشط'
         user.updated_at = datetime.utcnow()
+        
+        # Create audit log
+        audit_log = AuditLog(
+            action_type='status_change',
+            performed_by_id=current_user.user_id,
+            affected_user_id=user.user_id,
+            old_value=old_status,
+            new_value=new_status,
+            description=f'تم تغيير حالة حساب {user.full_name} من "{old_status}" إلى "{new_status}"',
+            ip_address=request.remote_addr
+        )
+        db.session.add(audit_log)
         db.session.commit()
         
         status = 'activated' if user.is_active else 'deactivated'
         return jsonify({
-            'message': f'User account {status} successfully',
+            'message': f'تم {new_status} حساب المستخدم بنجاح',
             'user': user.to_dict()
         }), 200
         
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': f'Error updating user status: {str(e)}'}), 500
+
+# AUDIT LOG ENDPOINTS
+@user_bp.route('/admin/audit-logs', methods=['GET'])
+@token_required
+@role_required(['Higher Committee'])
+def get_audit_logs(current_user):
+    """Higher Committee ONLY endpoint to view audit logs"""
+    try:
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
+        action_type = request.args.get('action_type')
+        affected_user_id = request.args.get('affected_user_id')
+        
+        query = AuditLog.query
+        
+        # Filter by action type if specified
+        if action_type:
+            query = query.filter_by(action_type=action_type)
+        
+        # Filter by affected user if specified
+        if affected_user_id:
+            query = query.filter_by(affected_user_id=affected_user_id)
+        
+        # Paginate results (newest first)
+        pagination = query.order_by(AuditLog.created_at.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        return jsonify({
+            'logs': [log.to_dict() for log in pagination.items],
+            'total': pagination.total,
+            'pages': pagination.pages,
+            'current_page': page
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'خطأ في جلب سجل التدقيق: {str(e)}'}), 500

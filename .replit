@@ -1,4 +1,4 @@
-modules = ["cpp-clang14", "nodejs-20", "c-clang14", "python-3.11", "postgresql-16"]
+modules = ["cpp-clang14", "nodejs-20", "c-clang14", "python-3.11", "postgresql-16", "python3"]
 [agent]
 expertMode = true
 
@@ -52,10 +52,6 @@ externalPort = 80
 [[ports]]
 localPort = 42607
 externalPort = 3000
-
-[[ports]]
-localPort = 44683
-externalPort = 3001
 
 [deployment]
 deploymentTarget = "autoscale"

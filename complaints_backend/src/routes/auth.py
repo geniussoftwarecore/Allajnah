@@ -1,6 +1,10 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
+import pyotp
+import qrcode
+import io
+import base64
 from datetime import datetime, timedelta
 from functools import wraps
 from src.models.complaint import db, User, Role
@@ -101,14 +105,24 @@ def login():
         data = request.get_json()
         
         if not data.get('username') or not data.get('password'):
-            return jsonify({'message': 'Username and password are required'}), 400
+            return jsonify({'message': 'اسم المستخدم وكلمة المرور مطلوبان'}), 400
         
         user = User.query.filter_by(username=data['username']).first()
         
         if user and check_password_hash(user.password_hash, data['password']):
             if not user.is_active:
-                return jsonify({'message': 'Account is deactivated'}), 401
+                return jsonify({'message': 'الحساب غير نشط'}), 401
             
+            # Check if 2FA is enabled
+            if user.two_factor_enabled:
+                # Return response requiring 2FA
+                return jsonify({
+                    'requires_2fa': True,
+                    'message': 'يرجى إدخال رمز المصادقة الثنائية',
+                    'username': user.username
+                }), 200
+            
+            # No 2FA, proceed with login
             from flask import current_app
             token = jwt.encode({
                 'user_id': user.user_id,
@@ -116,15 +130,16 @@ def login():
             }, current_app.config['SECRET_KEY'], algorithm='HS256')
             
             return jsonify({
-                'message': 'Login successful',
+                'requires_2fa': False,
+                'message': 'تم تسجيل الدخول بنجاح',
                 'token': token,
                 'user': user.to_dict()
             }), 200
         
-        return jsonify({'message': 'Invalid credentials'}), 401
+        return jsonify({'message': 'اسم المستخدم أو كلمة المرور غير صحيحة'}), 401
         
     except Exception as e:
-        return jsonify({'message': f'Error during login: {str(e)}'}), 500
+        return jsonify({'message': f'خطأ أثناء تسجيل الدخول: {str(e)}'}), 500
 
 @auth_bp.route('/profile', methods=['GET'])
 @token_required
@@ -196,3 +211,134 @@ def get_roles():
         }), 200
     except Exception as e:
         return jsonify({'message': f'Error fetching roles: {str(e)}'}), 500
+
+# 2FA ENDPOINTS
+@auth_bp.route('/2fa/enable', methods=['POST'])
+@token_required
+def enable_2fa(current_user):
+    """Enable 2FA for the current user"""
+    try:
+        if current_user.two_factor_enabled:
+            return jsonify({'message': 'المصادقة الثنائية مفعلة بالفعل'}), 400
+        
+        # Generate a new secret
+        secret = pyotp.random_base32()
+        current_user.two_factor_secret = secret
+        
+        # Generate QR code
+        totp = pyotp.TOTP(secret)
+        provisioning_uri = totp.provisioning_uri(
+            name=current_user.email,
+            issuer_name='نظام الشكاوى الإلكتروني'
+        )
+        
+        # Create QR code image
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(provisioning_uri)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        # Convert to base64
+        buffer = io.BytesIO()
+        img.save(buffer, format='PNG')
+        img_str = base64.b64encode(buffer.getvalue()).decode()
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'تم إنشاء مفتاح المصادقة الثنائية. يرجى مسح رمز QR باستخدام تطبيق المصادقة',
+            'secret': secret,
+            'qr_code': f'data:image/png;base64,{img_str}',
+            'manual_entry': provisioning_uri
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'خطأ في تفعيل المصادقة الثنائية: {str(e)}'}), 500
+
+@auth_bp.route('/2fa/verify', methods=['POST'])
+@token_required
+def verify_2fa_setup(current_user):
+    """Verify 2FA setup with a code"""
+    try:
+        data = request.get_json()
+        
+        if 'code' not in data:
+            return jsonify({'message': 'رمز التحقق مطلوب'}), 400
+        
+        if not current_user.two_factor_secret:
+            return jsonify({'message': 'لم يتم إعداد المصادقة الثنائية'}), 400
+        
+        # Verify the code
+        totp = pyotp.TOTP(current_user.two_factor_secret)
+        if totp.verify(data['code']):
+            current_user.two_factor_enabled = True
+            db.session.commit()
+            return jsonify({'message': 'تم تفعيل المصادقة الثنائية بنجاح'}), 200
+        else:
+            return jsonify({'message': 'رمز التحقق غير صحيح'}), 400
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'خطأ في التحقق: {str(e)}'}), 500
+
+@auth_bp.route('/2fa/disable', methods=['POST'])
+@token_required
+def disable_2fa(current_user):
+    """Disable 2FA for the current user"""
+    try:
+        data = request.get_json()
+        
+        if not current_user.two_factor_enabled:
+            return jsonify({'message': 'المصادقة الثنائية غير مفعلة'}), 400
+        
+        # Verify password before disabling
+        if 'password' not in data:
+            return jsonify({'message': 'كلمة المرور مطلوبة لإيقاف المصادقة الثنائية'}), 400
+        
+        if not check_password_hash(current_user.password_hash, data['password']):
+            return jsonify({'message': 'كلمة المرور غير صحيحة'}), 401
+        
+        current_user.two_factor_enabled = False
+        current_user.two_factor_secret = None
+        db.session.commit()
+        
+        return jsonify({'message': 'تم إيقاف المصادقة الثنائية بنجاح'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'خطأ في إيقاف المصادقة الثنائية: {str(e)}'}), 500
+
+@auth_bp.route('/2fa/validate', methods=['POST'])
+def validate_2fa():
+    """Validate 2FA code during login"""
+    try:
+        data = request.get_json()
+        
+        if not data.get('username') or not data.get('code'):
+            return jsonify({'message': 'اسم المستخدم ورمز التحقق مطلوبان'}), 400
+        
+        user = User.query.filter_by(username=data['username']).first()
+        
+        if not user or not user.two_factor_enabled:
+            return jsonify({'message': 'بيانات غير صحيحة'}), 401
+        
+        # Verify the 2FA code
+        totp = pyotp.TOTP(user.two_factor_secret)
+        if totp.verify(data['code']):
+            from flask import current_app
+            token = jwt.encode({
+                'user_id': user.user_id,
+                'exp': datetime.utcnow() + timedelta(hours=24)
+            }, current_app.config['SECRET_KEY'], algorithm='HS256')
+            
+            return jsonify({
+                'message': 'تم تسجيل الدخول بنجاح',
+                'token': token,
+                'user': user.to_dict()
+            }), 200
+        else:
+            return jsonify({'message': 'رمز التحقق غير صحيح'}), 401
+        
+    except Exception as e:
+        return jsonify({'message': f'خطأ في التحقق: {str(e)}'}), 500
