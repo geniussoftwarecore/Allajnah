@@ -4,6 +4,7 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
+packages = ["openssl", "postgresql"]
 
 [workflows]
 runButton = "Project"
@@ -64,5 +65,5 @@ externalPort = 3000
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["gunicorn", "--chdir", "complaints_backend", "--bind", "0.0.0.0:5000", "--reuse-port", "wsgi:app"]
+run = ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
 build = ["bash", "-c", "cd complaints_frontend && pnpm install && pnpm run build && rm -rf ../complaints_backend/src/static/* && cp -r dist/* ../complaints_backend/src/static/"]
