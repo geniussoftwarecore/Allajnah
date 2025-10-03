@@ -32,6 +32,8 @@
         <input type="text" id="create-username" name="username"><br>
         <label for="create-email">Email:</label>
         <input type="email" id="create-email" name="email"><br>
+        <label for="create-password">Password:</label>
+        <input type="password" id="create-password" name="password"><br>
         <button onclick="createUser()">Create User</button>
         <pre id="create-user-result"></pre>
     </div>
@@ -98,22 +100,24 @@
             const resultElementId = 'create-user-result';
             const username = document.getElementById('create-username').value;
             const email = document.getElementById('create-email').value;
-            if (!username || !email) {
-                displayError(resultElementId, 'Username and email cannot be empty');
+            const password = document.getElementById('create-password').value;
+            if (!username || !email || !password) {
+                displayError(resultElementId, 'Username, email and password cannot be empty');
                 return;
             }
             try {
                 const response = await fetch(API_BASE_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, email })
+                    body: JSON.stringify({ username, email, password })
                 });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message || `HTTP error! status: ${response.status}`);
                 displayResult(resultElementId, data);
-                // 清空输入框
+                // Clear input fields
                 document.getElementById('create-username').value = '';
                 document.getElementById('create-email').value = '';
+                document.getElementById('create-password').value = '';
             } catch (error) {
                 displayError(resultElementId, error);
             }
