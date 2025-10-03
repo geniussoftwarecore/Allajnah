@@ -58,22 +58,24 @@ def register():
         
         # Validate required fields (role_name removed - enforced by server)
         required_fields = ['username', 'email', 'password', 'full_name']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({'message': f'{field} is required'}), 400
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return jsonify({
+                'message': f'الحقول التالية مطلوبة: {", ".join(missing_fields)}'
+            }), 400
         
         # Check if user already exists
         if User.query.filter_by(username=data['username']).first():
-            return jsonify({'message': 'Username already exists'}), 400
+            return jsonify({'message': 'اسم المستخدم موجود بالفعل'}), 400
         
         if User.query.filter_by(email=data['email']).first():
-            return jsonify({'message': 'Email already exists'}), 400
+            return jsonify({'message': 'البريد الإلكتروني موجود بالفعل'}), 400
         
         # SECURITY: Always assign default "Trader" role to new registrations
         # Ignore any role data from client to prevent privilege escalation
         default_role = Role.query.filter_by(role_name='Trader').first()
         if not default_role:
-            return jsonify({'message': 'System error: Default role not configured'}), 500
+            return jsonify({'message': 'خطأ في النظام: الدور الافتراضي غير مكوَّن'}), 500
         
         # Create new user with default Trader role
         hashed_password = generate_password_hash(data['password'])
@@ -91,13 +93,13 @@ def register():
         db.session.commit()
         
         return jsonify({
-            'message': 'User created successfully',
+            'message': 'تم إنشاء الحساب بنجاح',
             'user': new_user.to_dict()
         }), 201
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'message': f'Error creating user: {str(e)}'}), 500
+        return jsonify({'message': f'خطأ في إنشاء المستخدم: {str(e)}'}), 500
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
