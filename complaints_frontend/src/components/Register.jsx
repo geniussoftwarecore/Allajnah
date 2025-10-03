@@ -139,6 +139,7 @@ const Register = () => {
                     placeholder="أدخل اسم المستخدم"
                     className="h-11 text-right"
                     disabled={loading}
+                    autoComplete="username"
                   />
                 </div>
                 
@@ -155,6 +156,7 @@ const Register = () => {
                     placeholder="example@domain.com"
                     className="h-11 text-right"
                     disabled={loading}
+                    autoComplete="email"
                   />
                 </div>
               </div>
@@ -172,6 +174,7 @@ const Register = () => {
                   placeholder="أدخل الاسم الكامل"
                   className="h-11 text-right"
                   disabled={loading}
+                  autoComplete="name"
                 />
               </div>
 
@@ -189,6 +192,7 @@ const Register = () => {
                     placeholder="أدخل كلمة المرور"
                     className="h-11 text-right"
                     disabled={loading}
+                    autoComplete="new-password"
                   />
                 </div>
                 
@@ -205,6 +209,7 @@ const Register = () => {
                     placeholder="أعد إدخال كلمة المرور"
                     className="h-11 text-right"
                     disabled={loading}
+                    autoComplete="new-password"
                   />
                 </div>
               </div>
@@ -222,6 +227,7 @@ const Register = () => {
                   placeholder="777123456"
                   className="h-11 text-right"
                   disabled={loading}
+                  autoComplete="tel"
                 />
               </div>
 

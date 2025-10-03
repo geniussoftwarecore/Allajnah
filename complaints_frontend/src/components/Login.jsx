@@ -92,6 +92,7 @@ const Login = () => {
                   placeholder="أدخل اسم المستخدم"
                   className="h-11 text-right"
                   disabled={loading}
+                  autoComplete="username"
                 />
               </div>
               
@@ -108,6 +109,7 @@ const Login = () => {
                   placeholder="أدخل كلمة المرور"
                   className="h-11 text-right"
                   disabled={loading}
+                  autoComplete="current-password"
                 />
               </div>
               
