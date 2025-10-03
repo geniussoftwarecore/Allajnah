@@ -22,7 +22,8 @@ import {
   User,
   Menu,
   X,
-  Bell
+  Bell,
+  Users
 } from 'lucide-react';
 
 const Navigation = () => {
@@ -90,6 +91,12 @@ const Navigation = () => {
       label: 'التقارير',
       path: '/reports',
       icon: BarChart3,
+      roles: ['Technical Committee', 'Higher Committee']
+    },
+    {
+      label: 'إدارة المستخدمين',
+      path: '/admin/users',
+      icon: Users,
       roles: ['Technical Committee', 'Higher Committee']
     },
     {

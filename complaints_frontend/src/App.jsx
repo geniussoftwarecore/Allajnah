@@ -9,6 +9,7 @@ import Dashboard from './components/Dashboard';
 import ComplaintsList from './components/ComplaintsList';
 import NewComplaint from './components/NewComplaint';
 import Reports from './components/Reports';
+import UserManagement from './components/UserManagement';
 import './App.css';
 
 // Axios will use Vite's proxy configuration for /api requests
@@ -63,6 +64,14 @@ function AppContent() {
             element={
               <ProtectedRoute requiredRoles={['Technical Committee', 'Higher Committee']}>
                 <Reports />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/users" 
+            element={
+              <ProtectedRoute requiredRoles={['Technical Committee', 'Higher Committee']}>
+                <UserManagement />
               </ProtectedRoute>
             } 
           />

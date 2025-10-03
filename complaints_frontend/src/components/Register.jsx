@@ -6,10 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, UserPlus, AlertCircle, CheckCircle } from 'lucide-react';
-import axios from 'axios';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -19,29 +17,14 @@ const Register = () => {
     confirmPassword: '',
     full_name: '',
     phone_number: '',
-    address: '',
-    role_name: ''
+    address: ''
   });
-  const [roles, setRoles] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   
   const { register } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const response = await axios.get('/api/roles');
-        setRoles(response.data.roles);
-      } catch (error) {
-        console.error('Failed to fetch roles:', error);
-      }
-    };
-
-    fetchRoles();
-  }, []);
 
   const handleChange = (e) => {
     setFormData({
@@ -52,17 +35,9 @@ const Register = () => {
     setSuccess('');
   };
 
-  const handleRoleChange = (value) => {
-    setFormData({
-      ...formData,
-      role_name: value
-    });
-    setError('');
-  };
-
   const validateForm = () => {
     if (!formData.username || !formData.email || !formData.password || 
-        !formData.full_name || !formData.role_name) {
+        !formData.full_name) {
       setError('يرجى ملء جميع الحقول المطلوبة');
       return false;
     }
@@ -110,15 +85,6 @@ const Register = () => {
     }
     
     setLoading(false);
-  };
-
-  const getRoleDisplayName = (roleName) => {
-    const roleMap = {
-      'Trader': 'تاجر',
-      'Technical Committee': 'عضو اللجنة الفنية',
-      'Higher Committee': 'عضو اللجنة العليا'
-    };
-    return roleMap[roleName] || roleName;
   };
 
   return (
@@ -243,40 +209,20 @@ const Register = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="phone_number" className="text-sm font-medium text-gray-700">
-                    رقم الهاتف
-                  </Label>
-                  <Input
-                    id="phone_number"
-                    name="phone_number"
-                    type="tel"
-                    value={formData.phone_number}
-                    onChange={handleChange}
-                    placeholder="777123456"
-                    className="h-11 text-right"
-                    disabled={loading}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="role_name" className="text-sm font-medium text-gray-700">
-                    نوع الحساب *
-                  </Label>
-                  <Select onValueChange={handleRoleChange} disabled={loading}>
-                    <SelectTrigger className="h-11 text-right">
-                      <SelectValue placeholder="اختر نوع الحساب" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {roles.map((role) => (
-                        <SelectItem key={role.role_id} value={role.role_name}>
-                          {getRoleDisplayName(role.role_name)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone_number" className="text-sm font-medium text-gray-700">
+                  رقم الهاتف
+                </Label>
+                <Input
+                  id="phone_number"
+                  name="phone_number"
+                  type="tel"
+                  value={formData.phone_number}
+                  onChange={handleChange}
+                  placeholder="777123456"
+                  className="h-11 text-right"
+                  disabled={loading}
+                />
               </div>
 
               <div className="space-y-2">

@@ -52,8 +52,8 @@ def register():
     try:
         data = request.get_json()
         
-        # Validate required fields
-        required_fields = ['username', 'email', 'password', 'full_name', 'role_name']
+        # Validate required fields (role_name removed - enforced by server)
+        required_fields = ['username', 'email', 'password', 'full_name']
         for field in required_fields:
             if field not in data:
                 return jsonify({'message': f'{field} is required'}), 400
@@ -65,12 +65,13 @@ def register():
         if User.query.filter_by(email=data['email']).first():
             return jsonify({'message': 'Email already exists'}), 400
         
-        # Get role
-        role = Role.query.filter_by(role_name=data['role_name']).first()
-        if not role:
-            return jsonify({'message': 'Invalid role'}), 400
+        # SECURITY: Always assign default "Trader" role to new registrations
+        # Ignore any role data from client to prevent privilege escalation
+        default_role = Role.query.filter_by(role_name='Trader').first()
+        if not default_role:
+            return jsonify({'message': 'System error: Default role not configured'}), 500
         
-        # Create new user
+        # Create new user with default Trader role
         hashed_password = generate_password_hash(data['password'])
         new_user = User(
             username=data['username'],
@@ -79,7 +80,7 @@ def register():
             full_name=data['full_name'],
             phone_number=data.get('phone_number'),
             address=data.get('address'),
-            role_id=role.role_id
+            role_id=default_role.role_id  # Always use default Trader role
         )
         
         db.session.add(new_user)
