@@ -18,24 +18,29 @@ from src.models.complaint import User, Role, AuditLog
 class TestAuthSecurity(unittest.TestCase):
     """Test authentication and security features"""
     
+    @classmethod
+    def setUpClass(cls):
+        """Set up test app once for all tests"""
+        cls.app = app
+        cls.app.config['TESTING'] = True
+        cls.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    
     def setUp(self):
         """Set up test environment"""
-        self.app = app
-        self.app.config['TESTING'] = True
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
         self.client = self.app.test_client()
         
         with self.app.app_context():
             db.create_all()
-            # Create test roles
-            roles = [
-                Role(role_id=1, role_name='Trader', description='تاجر'),
-                Role(role_id=2, role_name='Technical Committee', description='لجنة فنية'),
-                Role(role_id=3, role_name='Higher Committee', description='لجنة عليا')
-            ]
-            for role in roles:
-                db.session.add(role)
-            db.session.commit()
+            # Create test roles if they don't exist
+            if not Role.query.filter_by(role_name='Trader').first():
+                roles = [
+                    Role(role_id=1, role_name='Trader', description='تاجر'),
+                    Role(role_id=2, role_name='Technical Committee', description='لجنة فنية'),
+                    Role(role_id=3, role_name='Higher Committee', description='لجنة عليا')
+                ]
+                for role in roles:
+                    db.session.add(role)
+                db.session.commit()
     
     def tearDown(self):
         """Clean up after tests"""
@@ -158,36 +163,42 @@ class TestAuthSecurity(unittest.TestCase):
 class TestRoleManagement(unittest.TestCase):
     """Test role management and audit logging"""
     
+    @classmethod
+    def setUpClass(cls):
+        """Set up test app once for all tests"""
+        cls.app = app
+        cls.app.config['TESTING'] = True
+        cls.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    
     def setUp(self):
         """Set up test environment"""
-        self.app = app
-        self.app.config['TESTING'] = True
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
         self.client = self.app.test_client()
         
         with self.app.app_context():
             db.create_all()
-            # Create test roles
-            roles = [
-                Role(role_id=1, role_name='Trader', description='تاجر'),
-                Role(role_id=2, role_name='Technical Committee', description='لجنة فنية'),
-                Role(role_id=3, role_name='Higher Committee', description='لجنة عليا')
-            ]
-            for role in roles:
-                db.session.add(role)
-            db.session.commit()
+            # Create test roles if they don't exist
+            if not Role.query.filter_by(role_name='Trader').first():
+                roles = [
+                    Role(role_id=1, role_name='Trader', description='تاجر'),
+                    Role(role_id=2, role_name='Technical Committee', description='لجنة فنية'),
+                    Role(role_id=3, role_name='Higher Committee', description='لجنة عليا')
+                ]
+                for role in roles:
+                    db.session.add(role)
+                db.session.commit()
             
-            # Create a Higher Committee user for testing
+            # Create a Higher Committee user for testing if doesn't exist
             from werkzeug.security import generate_password_hash
-            admin_user = User(
-                username='admin',
-                email='admin@example.com',
-                password_hash=generate_password_hash('admin123'),
-                full_name='Admin User',
-                role_id=3  # Higher Committee
-            )
-            db.session.add(admin_user)
-            db.session.commit()
+            if not User.query.filter_by(username='admin').first():
+                admin_user = User(
+                    username='admin',
+                    email='admin@example.com',
+                    password_hash=generate_password_hash('admin123'),
+                    full_name='Admin User',
+                    role_id=3  # Higher Committee
+                )
+                db.session.add(admin_user)
+                db.session.commit()
     
     def tearDown(self):
         """Clean up after tests"""
@@ -283,19 +294,24 @@ class TestRoleManagement(unittest.TestCase):
 class Test2FA(unittest.TestCase):
     """Test 2FA functionality"""
     
+    @classmethod
+    def setUpClass(cls):
+        """Set up test app once for all tests"""
+        cls.app = app
+        cls.app.config['TESTING'] = True
+        cls.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    
     def setUp(self):
         """Set up test environment"""
-        self.app = app
-        self.app.config['TESTING'] = True
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
         self.client = self.app.test_client()
         
         with self.app.app_context():
             db.create_all()
-            # Create test roles
-            role = Role(role_id=1, role_name='Trader', description='تاجر')
-            db.session.add(role)
-            db.session.commit()
+            # Create test roles if doesn't exist
+            if not Role.query.filter_by(role_name='Trader').first():
+                role = Role(role_id=1, role_name='Trader', description='تاجر')
+                db.session.add(role)
+                db.session.commit()
     
     def tearDown(self):
         """Clean up after tests"""
