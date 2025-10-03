@@ -131,7 +131,7 @@ class TestAuthSecurity(unittest.TestCase):
         
         self.assertEqual(response.status_code, 401)
         data = json.loads(response.data)
-        self.assertIn('Token is missing', data['message'])
+        self.assertIn('رمز التوثيق مفقود', data['message'])
     
     def test_role_based_access_control(self):
         """Test that RBAC is enforced on admin endpoints"""

@@ -21,21 +21,21 @@ def token_required(f):
             try:
                 token = auth_header.split(" ")[1]  # Bearer TOKEN
             except IndexError:
-                return jsonify({'message': 'Token format invalid'}), 401
+                return jsonify({'message': 'تنسيق رمز التوثيق غير صالح'}), 401
         
         if not token:
-            return jsonify({'message': 'Token is missing'}), 401
+            return jsonify({'message': 'رمز التوثيق مفقود'}), 401
         
         try:
             from flask import current_app
             data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
             current_user = User.query.filter_by(user_id=data['user_id']).first()
             if not current_user:
-                return jsonify({'message': 'Token is invalid'}), 401
+                return jsonify({'message': 'رمز التوثيق غير صالح'}), 401
         except jwt.ExpiredSignatureError:
-            return jsonify({'message': 'Token has expired'}), 401
+            return jsonify({'message': 'انتهت صلاحية رمز التوثيق'}), 401
         except jwt.InvalidTokenError:
-            return jsonify({'message': 'Token is invalid'}), 401
+            return jsonify({'message': 'رمز التوثيق غير صالح'}), 401
         
         return f(current_user, *args, **kwargs)
     
@@ -46,7 +46,7 @@ def role_required(required_roles):
         @wraps(f)
         def decorated(current_user, *args, **kwargs):
             if current_user.role.role_name not in required_roles:
-                return jsonify({'message': 'Insufficient permissions'}), 403
+                return jsonify({'message': 'صلاحيات غير كافية'}), 403
             return f(current_user, *args, **kwargs)
         return decorated
     return decorator
@@ -167,20 +167,20 @@ def update_profile(current_user):
             # Check if email is already taken by another user
             existing_user = User.query.filter_by(email=data['email']).first()
             if existing_user and existing_user.user_id != current_user.user_id:
-                return jsonify({'message': 'Email already exists'}), 400
+                return jsonify({'message': 'البريد الإلكتروني مستخدم مسبقاً'}), 400
             current_user.email = data['email']
         
         current_user.updated_at = datetime.utcnow()
         db.session.commit()
         
         return jsonify({
-            'message': 'Profile updated successfully',
+            'message': 'تم تحديث الملف الشخصي بنجاح',
             'user': current_user.to_dict()
         }), 200
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'message': f'Error updating profile: {str(e)}'}), 500
+        return jsonify({'message': f'خطأ في تحديث الملف الشخصي: {str(e)}'}), 500
 
 @auth_bp.route('/change-password', methods=['POST'])
 @token_required
@@ -189,20 +189,20 @@ def change_password(current_user):
         data = request.get_json()
         
         if not data.get('current_password') or not data.get('new_password'):
-            return jsonify({'message': 'Current password and new password are required'}), 400
+            return jsonify({'message': 'كلمة المرور الحالية والجديدة مطلوبتان'}), 400
         
         if not check_password_hash(current_user.password_hash, data['current_password']):
-            return jsonify({'message': 'Current password is incorrect'}), 400
+            return jsonify({'message': 'كلمة المرور الحالية غير صحيحة'}), 400
         
         current_user.password_hash = generate_password_hash(data['new_password'])
         current_user.updated_at = datetime.utcnow()
         db.session.commit()
         
-        return jsonify({'message': 'Password changed successfully'}), 200
+        return jsonify({'message': 'تم تغيير كلمة المرور بنجاح'}), 200
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'message': f'Error changing password: {str(e)}'}), 500
+        return jsonify({'message': f'خطأ في تغيير كلمة المرور: {str(e)}'}), 500
 
 @auth_bp.route('/roles', methods=['GET'])
 def get_roles():
@@ -212,7 +212,7 @@ def get_roles():
             'roles': [role.to_dict() for role in roles]
         }), 200
     except Exception as e:
-        return jsonify({'message': f'Error fetching roles: {str(e)}'}), 500
+        return jsonify({'message': f'خطأ في جلب الأدوار: {str(e)}'}), 500
 
 # 2FA ENDPOINTS
 @auth_bp.route('/2fa/enable', methods=['POST'])
