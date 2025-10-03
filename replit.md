@@ -80,17 +80,20 @@ The deployment process:
 ## Recent Changes (Oct 3, 2025)
 - **Fresh GitHub Import Setup**: Successfully configured project for Replit environment
 - **Dependencies Installed**:
-  - Python 3.11 backend dependencies via uv (Flask, Flask-CORS, Flask-SQLAlchemy, PyJWT, Gunicorn, etc.)
+  - Python 3.11 backend dependencies via uv (Flask, Flask-CORS, Flask-SQLAlchemy, PyJWT, Gunicorn, etc.) - 28 packages
   - Frontend dependencies via pnpm (390 packages including React 19, Vite 6, Tailwind CSS 4, Radix UI)
 - **Workflows Configured**:
   - Backend workflow: Runs Flask dev server on localhost:8000 with console output
   - Frontend workflow: Runs Vite dev server on 0.0.0.0:5000 with webview output
-- **Vite Configuration**: Verified `allowedHosts: true` for Replit proxy compatibility
-- **Form Improvements**: Added autocomplete attributes to Login and Register forms for better UX
+- **Vite Configuration**: Confirmed `allowedHosts: true` and proxy configuration for Replit environment
 - **Deployment Setup**: Configured autoscale deployment
-  - Build: Installs pnpm dependencies, builds frontend, copies to backend static folder
-  - Run: Serves with Gunicorn on port 5000 via wsgi:app
-- **Testing**: Both workflows running successfully, login page displays correctly with Arabic RTL interface
+  - Build: `cd complaints_frontend && pnpm install && pnpm run build && cp dist/* to backend/src/static/`
+  - Run: `gunicorn --bind 0.0.0.0:5000 --reuse-port --chdir complaints_backend wsgi:app`
+- **Testing**: Both workflows running successfully
+  - Backend server: Running on http://localhost:8000 with debug mode
+  - Frontend server: Running on http://0.0.0.0:5000 with Vite HMR
+  - Login page displays correctly with Arabic RTL interface
+  - API proxy working correctly (/api routes forward to backend)
 
 ## User Preferences
 - Language: Arabic (RTL interface)
