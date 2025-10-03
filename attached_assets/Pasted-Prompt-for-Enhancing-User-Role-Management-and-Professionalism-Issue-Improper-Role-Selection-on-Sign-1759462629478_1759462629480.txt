@@ -1,0 +1,18 @@
+Prompt for Enhancing User Role Management and Professionalism
+Issue: Improper Role Selection on Signup
+
+Currently, the project allows new users to choose their own role (e.g., selecting "Merchant", "Support Staff", or "High Committee") when creating an account. This is a serious design flaw, since a normal user account should never have the ability to assign itself an elevated role. For example, one developer experiencing a similar issue noted, “it appears that [the user] can choose the role… but I want this not to happen, I want the user to register only in the first role”
+wordpress.org
+. In other words, new sign-ups should be restricted to a default basic role by default, without offering any choice of higher privileges.
+
+Required Improvements
+
+Enforce Default User Role & Simplify Signup: Remove any role-selection options from the user registration form so that new users only provide essential information (name, email, password, etc.). All new accounts should automatically be created with a default role (for example, “Regular User”) that has basic permissions. If the platform needs to accommodate special user types like merchants or support staff, handle that through a separate process after the initial signup (e.g. an application or admin approval workflow) rather than during registration. This streamlined approach keeps the first-time user experience clean and professional, avoiding confusion and preventing users from assigning themselves unintended roles.
+
+Admin Role Management: Implement a secure mechanism for administrators to assign or change user roles after account creation. Provide an admin-only interface or dashboard where an authorized admin can promote a standard user to roles such as “Merchant”, “Support Staff”, or “High Committee” when appropriate. Regular users must have no capability to escalate their own role. This controlled approach upholds the Principle of Least Privilege – users start with minimal access rights, and only gain elevated permissions when granted by an admin
+dev.to
+.
+
+Back-End Validation for Security: Add server-side enforcement to guarantee that every new user is created with the default role, regardless of any input from the signup form. Even if a malicious user tries to manipulate the front-end (for instance, by editing form data to include an admin role), the back-end should ignore such values and enforce the normal user role. By validating and overriding roles on the server, the system prevents any unauthorized privilege escalation and maintains integrity of the role assignment process.
+
+Code Quality and Additional Enhancements: Refactor the relevant parts of the codebase to meet high professional standards. Ensure that the code for user registration and role assignment is clean, well-documented, and follows best practices (clear naming conventions, error handling, and security checks). Improve overall professionalism by introducing features like email verification for new accounts (to confirm user identity), informative success/error messages for user actions, and logging/auditing of critical events (such as role changes) for accountability. These enhancements will make the system more secure, reliable, and polished, aligning the project with the highest levels of professionalism.
