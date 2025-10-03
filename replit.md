@@ -82,6 +82,10 @@ The deployment process:
 - **Dependencies Installed**:
   - Python 3.11 backend dependencies via uv (Flask, Flask-CORS, Flask-SQLAlchemy, PyJWT, Gunicorn, etc.) - 28 packages
   - Frontend dependencies via pnpm (390 packages including React 19, Vite 6, Tailwind CSS 4, Radix UI)
+- **Database Initialization**: Ran `python complaints_backend/src/init_data.py` to populate database with:
+  - 3 user roles (Trader, Technical Committee, Higher Committee)
+  - 7 complaint categories (مالية, جمركية, خدمات, تقنية, بيئية, استثمارية, أخرى)
+  - 10 complaint statuses (from جديدة to رفع مذكرة بالرأي القانوني)
 - **Workflows Configured**:
   - Backend workflow: Runs Flask dev server on localhost:8000 with console output
   - Frontend workflow: Runs Vite dev server on 0.0.0.0:5000 with webview output
@@ -94,6 +98,7 @@ The deployment process:
   - Frontend server: Running on http://0.0.0.0:5000 with Vite HMR
   - Login page displays correctly with Arabic RTL interface
   - API proxy working correctly (/api routes forward to backend)
+  - Registration now working after database initialization
 
 ## User Preferences
 - Language: Arabic (RTL interface)
