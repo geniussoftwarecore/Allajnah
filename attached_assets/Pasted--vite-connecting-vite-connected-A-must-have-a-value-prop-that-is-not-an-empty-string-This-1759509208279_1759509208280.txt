@@ -1,0 +1,17 @@
+[vite] connecting...
+[vite] connected.
+A  must have a value prop that is not an empty string. This is because the Select value can be set to an empty string to clear the selection and show the placeholder.
+at SelectItem (https://94767661-0c82-4e2b-bc59-749f8eedce82-00-3fkp01gig4aa3.janeway.replit.dev/node_modules/.vite/deps/@radix-ui_react-select.js?v=0b303469:902:13)
+at react-stack-bottom-frame (https://94767661-0c82-4e2b-bc59-749f8eedce82-00-3fkp01gig4aa3.janeway.replit.dev/node_modules/.vite/deps/react-dom_client.js?v=293bd293:17424:20)
+at renderWithHooks (https://94767661-0c82-4e2b-bc59-749f8eedce82-00-3fkp01gig4aa3.janeway.replit.dev/node_modules/.vite/deps/react-dom_client.js?v=293bd293:4206:24)
+at updateForwardRef (https://94767661-0c82-4e2b-bc59-749f8eedce82-00-3fkp01gig4aa3.janeway.replit.dev/node_modules/.vite/deps/react-dom_client.js?v=293bd293:6461:21)
+at beginWork (https://94767661-0c82-4e2b-bc59-749f8eedce82-00-3fkp01gig4aa3.janeway.replit.dev/node_modules/.vite/deps/react-dom_client.js?v=293bd293:7864:20)
+at runWithFiberInDEV (https://94767661-0c82-4e2b-bc59-749f8eedce82-00-3fkp01gig4aa3.janeway.replit.dev/node_modules/.vite/deps/react-dom_client.js?v=293bd293:1485:72)
+at performUnitOfWork (https://94767661-0c82-4e2b-bc59-749f8eedce82-00-3fkp01gig4aa3.janeway.replit.dev/node_modules/.vite/deps/react-dom_client.js?v=293bd293:10868:98)
+at workLoopSync (https://94767661-0c82-4e2b-bc59-749f8eedce82-00-3fkp01gig4aa3.janeway.replit.dev/node_modules/.vite/deps/react-dom_client.js?v=293bd293:10728:43)
+at renderRootSync (https://94767661-0c82-4e2b-bc59-749f8eedce82-00-3fkp01gig4aa3.janeway.replit.dev/node_modules/.vite/deps/react-dom_client.js?v=293bd293:10711:13)
+at performWorkOnRoot (https://94767661-0c82-4e2b-bc59-749f8eedce82-00-3fkp01gig4aa3.janeway.replit.dev/node_modules/.vite/deps/react-dom_client.js?v=293bd293:10359:46)
+An error occurred in the  component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.

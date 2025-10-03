@@ -34,7 +34,7 @@ const UserManagement = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
   const [selectedUser, setSelectedUser] = useState(null);
   const [newRole, setNewRole] = useState('');
   const [showDialog, setShowDialog] = useState(false);
@@ -63,7 +63,7 @@ const UserManagement = () => {
         per_page: '20'
       });
       if (search) params.append('search', search);
-      if (role) params.append('role', role);
+      if (role && role !== 'all') params.append('role', role);
 
       const response = await axios.get(`/api/admin/users?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -241,7 +241,7 @@ const UserManagement = () => {
                     <SelectValue placeholder="جميع الأدوار" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">جميع الأدوار</SelectItem>
+                    <SelectItem value="all">جميع الأدوار</SelectItem>
                     {roles.map((role) => (
                       <SelectItem key={role.role_id} value={role.role_name}>
                         {getRoleDisplayName(role.role_name)}

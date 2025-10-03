@@ -39,9 +39,9 @@ const ComplaintsList = () => {
   const [newComment, setNewComment] = useState('');
   const [filters, setFilters] = useState({
     search: '',
-    status_id: '',
-    category_id: '',
-    priority: '',
+    status_id: 'all',
+    category_id: 'all',
+    priority: 'all',
     assigned_only: false
   });
   const [pagination, setPagination] = useState({
@@ -63,7 +63,7 @@ const ComplaintsList = () => {
         page: pagination.page.toString(),
         per_page: pagination.per_page.toString(),
         ...Object.fromEntries(
-          Object.entries(filters).filter(([_, value]) => value !== '' && value !== false)
+          Object.entries(filters).filter(([_, value]) => value !== '' && value !== false && value !== 'all')
         )
       });
 
@@ -173,9 +173,9 @@ const ComplaintsList = () => {
   const resetFilters = () => {
     setFilters({
       search: '',
-      status_id: '',
-      category_id: '',
-      priority: '',
+      status_id: 'all',
+      category_id: 'all',
+      priority: 'all',
       assigned_only: false
     });
     setPagination(prev => ({ ...prev, page: 1 }));
@@ -220,7 +220,7 @@ const ComplaintsList = () => {
                   <SelectValue placeholder="جميع الحالات" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">جميع الحالات</SelectItem>
+                  <SelectItem value="all">جميع الحالات</SelectItem>
                   {statuses.map((status) => (
                     <SelectItem key={status.status_id} value={status.status_id.toString()}>
                       {status.status_name}
@@ -234,7 +234,7 @@ const ComplaintsList = () => {
                   <SelectValue placeholder="جميع التصنيفات" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">جميع التصنيفات</SelectItem>
+                  <SelectItem value="all">جميع التصنيفات</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category.category_id} value={category.category_id.toString()}>
                       {category.category_name}
@@ -248,7 +248,7 @@ const ComplaintsList = () => {
                   <SelectValue placeholder="جميع الأولويات" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">جميع الأولويات</SelectItem>
+                  <SelectItem value="all">جميع الأولويات</SelectItem>
                   <SelectItem value="High">عالية</SelectItem>
                   <SelectItem value="Medium">متوسطة</SelectItem>
                   <SelectItem value="Low">منخفضة</SelectItem>
