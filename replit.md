@@ -73,11 +73,34 @@ The deployment process:
 ## Key Features
 - User authentication and authorization
 - Role-based access control (Trader, Technical Committee, Higher Committee)
+- Annual subscription payment system with admin review workflow
 - Complaint submission and tracking
 - Report generation
 - Arabic language interface (RTL support)
 
 ## Recent Changes
+
+### Oct 4, 2025 - Annual Subscription Payment System
+- **Complete Subscription Gateway Implemented**:
+  - Database Models: Subscription, Payment, PaymentMethod, Settings
+  - Backend API Routes: Subscription management, payment submission, admin review
+  - Frontend Components: SubscriptionGate, PaymentPage, PaymentReview, PaymentSettings
+  - Security: JWT secret moved to SESSION_SECRET environment variable
+  - Receipt Protection: Authentication and authorization required for downloads
+  - Comprehensive Enforcement: All Trader routes blocked until subscription active
+  
+- **Payment Flow**:
+  1. Trader registers and attempts to access system
+  2. System checks subscription status and blocks access if inactive
+  3. Trader views payment methods and submits payment with proof
+  4. Admin (Technical/Higher Committee) reviews and approves/rejects payment
+  5. Upon approval, subscription activates and Trader gains full access
+  
+- **Admin Features**:
+  - Payment method management (add/edit/delete Yemeni e-wallets and bank accounts)
+  - Payment review dashboard with approve/reject functionality
+  - Subscription price configuration
+  - View all payments with filtering and status tracking
 
 ### Oct 4, 2025 - Fresh Clone Setup
 - **GitHub Import Re-configured**: Successfully set up fresh clone for Replit environment
@@ -111,3 +134,16 @@ The deployment process:
 - Frontend uses Vite's proxy in development to route /api requests to backend
 - Production deployment serves the static frontend through Flask
 - All API routes are prefixed with /api
+
+## Security Requirements for Production
+- **SESSION_SECRET**: Must be set as an environment variable for JWT token signing
+  - Development fallback: 'dev-secret-key-please-change-in-production'
+  - Production: Configure strong random secret in deployment environment
+- **Receipt Files**: Stored in complaints_backend/src/uploads/ with authentication-protected downloads
+- **Subscription Enforcement**: Centralized in token_required decorator, blocks all Trader access without active subscription
+- **Payment Flow Routes**: Exempted from subscription check to allow payment submission:
+  - /api/subscription/status
+  - /api/payment-methods
+  - /api/subscription-price
+  - /api/payment/submit
+  - /api/payment/receipt/*

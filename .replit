@@ -53,6 +53,10 @@ externalPort = 80
 localPort = 39077
 externalPort = 3000
 
+[[ports]]
+localPort = 40817
+externalPort = 3001
+
 [deployment]
 deploymentTarget = "autoscale"
 run = ["gunicorn", "--bind", "0.0.0.0:5000", "--reuse-port", "--chdir", "complaints_backend", "wsgi:app"]
