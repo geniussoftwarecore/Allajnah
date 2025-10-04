@@ -5,6 +5,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from flask import Flask, send_from_directory
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from src.database.db import db
 from src.routes.user import user_bp
 from src.routes.complaint import complaint_bp
@@ -13,7 +15,19 @@ from src.routes.subscription import subscription_bp
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 app.config['SECRET_KEY'] = os.environ.get('SESSION_SECRET', 'dev-secret-key-please-change-in-production')
-CORS(app)
+app.config['MAX_CONTENT_LENGTH'] = int(os.environ.get('MAX_FILE_SIZE_MB', 5)) * 1024 * 1024
+
+cors_origins = os.environ.get('CORS_ORIGINS', '*').split(',')
+CORS(app, origins=cors_origins, supports_credentials=True)
+
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    storage_uri=os.environ.get('RATELIMIT_STORAGE_URL', 'memory://'),
+    default_limits=[os.environ.get('RATELIMIT_DEFAULT', '200 per day;50 per hour')]
+)
+
+app.limiter = limiter
 
 app.register_blueprint(user_bp, url_prefix='/api')
 app.register_blueprint(complaint_bp, url_prefix='/api')

@@ -1,20 +1,14 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from src.database.db import db
 from src.models.complaint import User, Subscription, Payment, PaymentMethod, Settings, Notification
-from src.routes.auth import token_required, role_required
+from src.routes.auth import token_required, role_required, rate_limit
+from src.utils.security import validate_and_save_file, validate_payment_data
 from datetime import datetime, timedelta
-from werkzeug.utils import secure_filename
 import os
-import uuid
 
 subscription_bp = Blueprint('subscription', __name__)
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uploads', 'receipts')
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @subscription_bp.route('/subscription/status', methods=['GET'])
@@ -73,31 +67,31 @@ def get_subscription_price():
 
 @subscription_bp.route('/payment/submit', methods=['POST'])
 @token_required
+@rate_limit("3 per hour")
 def submit_payment(current_user):
     try:
         if 'receipt_image' not in request.files:
             return jsonify({'message': 'صورة الإيصال مطلوبة'}), 400
         
         file = request.files['receipt_image']
-        if file.filename == '':
-            return jsonify({'message': 'لم يتم اختيار ملف'}), 400
+        data = request.form.to_dict()
         
-        if not allowed_file(file.filename):
-            return jsonify({'message': 'نوع الملف غير مسموح. يرجى رفع صورة أو PDF'}), 400
-        
-        data = request.form
-        required_fields = ['method_id', 'sender_name', 'sender_phone', 'amount', 'payment_date']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({'message': f'{field} مطلوب'}), 400
+        validation_errors = validate_payment_data(data)
+        if validation_errors:
+            return jsonify({
+                'message': 'بيانات غير صالحة',
+                'errors': validation_errors
+            }), 400
         
         method = PaymentMethod.query.get(data['method_id'])
-        if not method:
-            return jsonify({'message': 'طريقة دفع غير صحيحة'}), 400
+        if not method or not method.is_active:
+            return jsonify({'message': 'طريقة دفع غير صحيحة أو غير نشطة'}), 400
         
-        filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
-        file_path = os.path.join(UPLOAD_FOLDER, filename)
-        file.save(file_path)
+        success, result = validate_and_save_file(file, UPLOAD_FOLDER)
+        if not success:
+            return jsonify({'message': result.get('error', 'فشل في رفع الملف')}), 400
+        
+        filename = result['filename']
         
         new_payment = Payment(
             user_id=current_user.user_id,

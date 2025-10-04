@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import pyotp
@@ -10,6 +10,19 @@ from functools import wraps
 from src.models.complaint import db, User, Role
 
 auth_bp = Blueprint('auth', __name__)
+
+def rate_limit(limit_string):
+    """Decorator wrapper for rate limiting"""
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            try:
+                limiter = current_app.limiter
+                return limiter.limit(limit_string)(f)(*args, **kwargs)
+            except AttributeError:
+                return f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
 def token_required(f):
     @wraps(f)
@@ -116,6 +129,7 @@ def subscription_required(f):
     return decorated
 
 @auth_bp.route('/register', methods=['POST'])
+@rate_limit("5 per hour")
 def register():
     try:
         data = request.get_json()
@@ -166,6 +180,7 @@ def register():
         return jsonify({'message': f'خطأ في إنشاء المستخدم: {str(e)}'}), 500
 
 @auth_bp.route('/login', methods=['POST'])
+@rate_limit("10 per minute")
 def login():
     try:
         data = request.get_json()
@@ -376,6 +391,7 @@ def disable_2fa(current_user):
         return jsonify({'message': f'خطأ في إيقاف المصادقة الثنائية: {str(e)}'}), 500
 
 @auth_bp.route('/2fa/validate', methods=['POST'])
+@rate_limit("10 per minute")
 def validate_2fa():
     """Validate 2FA code during login"""
     try:
