@@ -47,17 +47,39 @@ def token_required(f):
         
         if current_user.role.role_name == 'Trader':
             if not any(request.path.startswith(route) for route in subscription_exempt_routes):
-                from src.models.complaint import Subscription
+                from src.models.complaint import Subscription, Settings
+                
                 active_subscription = Subscription.query.filter_by(
                     user_id=current_user.user_id,
                     status='active'
-                ).filter(Subscription.end_date > datetime.utcnow()).first()
+                ).order_by(Subscription.end_date.desc()).first()
                 
                 if not active_subscription:
                     return jsonify({
                         'message': 'يجب تفعيل الاشتراك للوصول إلى هذه الميزة',
                         'requires_subscription': True
                     }), 403
+                
+                grace_period_setting = Settings.query.filter_by(key='grace_period_days').first()
+                grace_period_days = int(grace_period_setting.value) if grace_period_setting else 7
+                
+                enable_grace_period = Settings.query.filter_by(key='enable_grace_period').first()
+                grace_enabled = enable_grace_period.value.lower() == 'true' if enable_grace_period else True
+                
+                if active_subscription.end_date < datetime.utcnow():
+                    if grace_enabled and active_subscription.grace_period_enabled:
+                        grace_end = active_subscription.end_date + timedelta(days=grace_period_days)
+                        if datetime.utcnow() > grace_end:
+                            return jsonify({
+                                'message': 'انتهت فترة السماح. يجب تجديد الاشتراك للوصول إلى هذه الميزة',
+                                'requires_subscription': True,
+                                'grace_period_expired': True
+                            }), 403
+                    else:
+                        return jsonify({
+                            'message': 'انتهى الاشتراك. يجب التجديد للوصول إلى هذه الميزة',
+                            'requires_subscription': True
+                        }), 403
         
         return f(current_user, *args, **kwargs)
     
