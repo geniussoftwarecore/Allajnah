@@ -77,28 +77,30 @@ The deployment process:
 - Report generation
 - Arabic language interface (RTL support)
 
-## Recent Changes (Oct 3, 2025)
-- **Fresh GitHub Import Setup**: Successfully configured project for Replit environment
-- **Dependencies Installed**:
-  - Python 3.11 backend dependencies via uv (Flask, Flask-CORS, Flask-SQLAlchemy, PyJWT, Gunicorn, etc.) - 28 packages
-  - Frontend dependencies via pnpm (390 packages including React 19, Vite 6, Tailwind CSS 4, Radix UI)
-- **Database Initialization**: Ran `python complaints_backend/src/init_data.py` to populate database with:
-  - 3 user roles (Trader, Technical Committee, Higher Committee)
-  - 7 complaint categories (مالية, جمركية, خدمات, تقنية, بيئية, استثمارية, أخرى)
-  - 10 complaint statuses (from جديدة to رفع مذكرة بالرأي القانوني)
+## Recent Changes
+
+### Oct 4, 2025 - Fresh Clone Setup
+- **GitHub Import Re-configured**: Successfully set up fresh clone for Replit environment
+- **Dependencies Reinstalled**:
+  - Backend: Python 3.11 dependencies via uv (Flask 3.1.1, Flask-CORS, Flask-SQLAlchemy, PyJWT, Gunicorn)
+  - Frontend: 390 packages via pnpm 10.4.1 (React 19.1.0, Vite 6.3.5, Tailwind CSS 4.1.7, Radix UI)
 - **Workflows Configured**:
-  - Backend workflow: Runs Flask dev server on localhost:8000 with console output
-  - Frontend workflow: Runs Vite dev server on 0.0.0.0:5000 with webview output
-- **Vite Configuration**: Confirmed `allowedHosts: true` and proxy configuration for Replit environment
-- **Deployment Setup**: Configured autoscale deployment
-  - Build: `cd complaints_frontend && pnpm install && pnpm run build && cp dist/* to backend/src/static/`
-  - Run: `gunicorn --bind 0.0.0.0:5000 --reuse-port --chdir complaints_backend wsgi:app`
-- **Testing**: Both workflows running successfully
-  - Backend server: Running on http://localhost:8000 with debug mode
-  - Frontend server: Running on http://0.0.0.0:5000 with Vite HMR
-  - Login page displays correctly with Arabic RTL interface
-  - API proxy working correctly (/api routes forward to backend)
-  - Registration now working after database initialization
+  - Backend: `cd complaints_backend && python src/main.py` (console output, port 8000)
+  - Frontend: `cd complaints_frontend && pnpm run dev` (webview output, port 5000)
+- **Deployment Configured**:
+  - Type: Autoscale (stateless)
+  - Build: Frontend build + copy to backend static folder
+  - Run: Gunicorn serving Flask app on port 5000
+- **Testing Verified**:
+  - Both workflows running successfully
+  - Backend on localhost:8000 (Flask debug mode)
+  - Frontend on 0.0.0.0:5000 (Vite HMR)
+  - Login page displays correctly with Arabic RTL
+  - Vite proxy correctly forwarding /api to backend
+
+### Oct 3, 2025 - Initial Setup
+- Database initialized with roles, categories, and statuses
+- Pre-existing SQLite database preserved with existing data
 
 ## User Preferences
 - Language: Arabic (RTL interface)
