@@ -234,10 +234,12 @@ class Subscription(db.Model):
     
     subscription_id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = db.Column(db.String(36), db.ForeignKey('users.user_id'), nullable=False)
+    plan = db.Column(db.String(50), default='annual')
     start_date = db.Column(db.DateTime, nullable=False)
     end_date = db.Column(db.DateTime, nullable=False)
     status = db.Column(db.String(20), default='active')
     is_renewal = db.Column(db.Boolean, default=False)
+    renewed_from = db.Column(db.String(36), db.ForeignKey('subscriptions.subscription_id'), nullable=True)
     grace_period_enabled = db.Column(db.Boolean, default=True)
     notified_14d = db.Column(db.Boolean, default=False)
     notified_7d = db.Column(db.Boolean, default=False)
@@ -246,15 +248,18 @@ class Subscription(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     user = db.relationship('User', backref='subscriptions', lazy=True)
+    previous_subscription = db.relationship('Subscription', remote_side=[subscription_id], backref='renewals', lazy=True)
     
     def to_dict(self):
         return {
             'subscription_id': self.subscription_id,
             'user_id': self.user_id,
+            'plan': self.plan,
             'start_date': self.start_date.isoformat() if self.start_date else None,
             'end_date': self.end_date.isoformat() if self.end_date else None,
             'status': self.status,
             'is_renewal': self.is_renewal,
+            'renewed_from': self.renewed_from,
             'grace_period_enabled': self.grace_period_enabled,
             'notified_14d': self.notified_14d,
             'notified_7d': self.notified_7d,
@@ -299,6 +304,7 @@ class Payment(db.Model):
     sender_phone = db.Column(db.String(50), nullable=False)
     transaction_reference = db.Column(db.String(255))
     amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(10), default='YER')
     payment_date = db.Column(db.DateTime, nullable=False)
     receipt_image_path = db.Column(db.String(500), nullable=False)
     status = db.Column(db.String(20), default='pending')
@@ -322,6 +328,7 @@ class Payment(db.Model):
             'sender_phone': self.sender_phone,
             'transaction_reference': self.transaction_reference,
             'amount': self.amount,
+            'currency': self.currency,
             'payment_date': self.payment_date.isoformat() if self.payment_date else None,
             'receipt_image_path': self.receipt_image_path,
             'status': self.status,
