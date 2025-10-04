@@ -237,6 +237,11 @@ class Subscription(db.Model):
     start_date = db.Column(db.DateTime, nullable=False)
     end_date = db.Column(db.DateTime, nullable=False)
     status = db.Column(db.String(20), default='active')
+    is_renewal = db.Column(db.Boolean, default=False)
+    grace_period_enabled = db.Column(db.Boolean, default=True)
+    notified_14d = db.Column(db.Boolean, default=False)
+    notified_7d = db.Column(db.Boolean, default=False)
+    notified_3d = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -249,6 +254,11 @@ class Subscription(db.Model):
             'start_date': self.start_date.isoformat() if self.start_date else None,
             'end_date': self.end_date.isoformat() if self.end_date else None,
             'status': self.status,
+            'is_renewal': self.is_renewal,
+            'grace_period_enabled': self.grace_period_enabled,
+            'notified_14d': self.notified_14d,
+            'notified_7d': self.notified_7d,
+            'notified_3d': self.notified_3d,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
