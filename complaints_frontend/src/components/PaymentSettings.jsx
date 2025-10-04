@@ -13,6 +13,9 @@ import axios from 'axios';
 const PaymentSettings = () => {
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [subscriptionPrice, setSubscriptionPrice] = useState('');
+  const [currency, setCurrency] = useState('YER');
+  const [gracePeriodDays, setGracePeriodDays] = useState('7');
+  const [enableGracePeriod, setEnableGracePeriod] = useState(true);
   const [loading, setLoading] = useState(true);
   const [showMethodDialog, setShowMethodDialog] = useState(false);
   const [editingMethod, setEditingMethod] = useState(null);
@@ -47,6 +50,21 @@ const PaymentSettings = () => {
       const priceSetting = settingsRes.data.settings.find(s => s.key === 'annual_subscription_price');
       if (priceSetting) {
         setSubscriptionPrice(priceSetting.value);
+      }
+      
+      const currencySetting = settingsRes.data.settings.find(s => s.key === 'currency');
+      if (currencySetting) {
+        setCurrency(currencySetting.value);
+      }
+      
+      const graceDaysSetting = settingsRes.data.settings.find(s => s.key === 'grace_period_days');
+      if (graceDaysSetting) {
+        setGracePeriodDays(graceDaysSetting.value);
+      }
+      
+      const graceEnabledSetting = settingsRes.data.settings.find(s => s.key === 'enable_grace_period');
+      if (graceEnabledSetting) {
+        setEnableGracePeriod(graceEnabledSetting.value.toLowerCase() === 'true');
       }
       
       setLoading(false);
@@ -110,7 +128,12 @@ const PaymentSettings = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.put('/api/admin/settings', 
-        { annual_subscription_price: subscriptionPrice },
+        { 
+          annual_subscription_price: subscriptionPrice,
+          currency: currency,
+          grace_period_days: gracePeriodDays,
+          enable_grace_period: enableGracePeriod ? 'true' : 'false'
+        },
         { headers: { Authorization: `Bearer ${token}` }}
       );
       
@@ -229,19 +252,74 @@ const PaymentSettings = () => {
             <TabsContent value="settings" className="mt-6">
               <div className="space-y-6">
                 <Card>
-                  <CardContent className="pt-6">
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="subscription_price">سعر الاشتراك السنوي (ريال يمني)</Label>
+                  <CardHeader>
+                    <CardTitle className="text-lg">إعدادات الاشتراك</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="subscription_price">سعر الاشتراك السنوي</Label>
                         <Input
                           id="subscription_price"
                           type="number"
                           value={subscriptionPrice}
                           onChange={(e) => setSubscriptionPrice(e.target.value)}
                         />
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-gray-500">
                           سيتم عرض هذا السعر للمستخدمين عند الاشتراك
                         </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="currency">العملة</Label>
+                        <select
+                          id="currency"
+                          value={currency}
+                          onChange={(e) => setCurrency(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        >
+                          <option value="YER">ريال يمني (YER)</option>
+                          <option value="USD">دولار أمريكي (USD)</option>
+                          <option value="SAR">ريال سعودي (SAR)</option>
+                        </select>
+                        <p className="text-sm text-gray-500">
+                          العملة المستخدمة في النظام
+                        </p>
+                      </div>
+
+                      <div className="space-y-4 pt-4 border-t">
+                        <h3 className="font-medium text-lg">إعدادات فترة السماح</h3>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-1">
+                            <Label htmlFor="enable_grace">تفعيل فترة السماح</Label>
+                            <p className="text-sm text-gray-500">
+                              السماح للمستخدمين بالوصول للنظام لفترة محدودة بعد انتهاء الاشتراك
+                            </p>
+                          </div>
+                          <Switch
+                            id="enable_grace"
+                            checked={enableGracePeriod}
+                            onCheckedChange={setEnableGracePeriod}
+                          />
+                        </div>
+
+                        {enableGracePeriod && (
+                          <div className="space-y-2">
+                            <Label htmlFor="grace_days">عدد أيام فترة السماح</Label>
+                            <Input
+                              id="grace_days"
+                              type="number"
+                              min="1"
+                              max="30"
+                              value={gracePeriodDays}
+                              onChange={(e) => setGracePeriodDays(e.target.value)}
+                            />
+                            <p className="text-sm text-gray-500">
+                              عدد الأيام التي يمكن للمستخدم الوصول للنظام بعد انتهاء الاشتراك (1-30 يوم)
+                            </p>
+                          </div>
+                        )}
                       </div>
 
                       <Button onClick={handleSaveSettings} className="w-full sm:w-auto">

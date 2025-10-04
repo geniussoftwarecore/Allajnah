@@ -14,18 +14,20 @@ import SubscriptionGate from './components/SubscriptionGate';
 import PaymentPage from './components/PaymentPage';
 import PaymentReview from './components/PaymentReview';
 import PaymentSettings from './components/PaymentSettings';
+import RenewalReminder from './components/RenewalReminder';
 import './App.css';
 
 // Axios will use Vite's proxy configuration for /api requests
 import axios from 'axios';
 
 function AppContent() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
         {isAuthenticated && <Navigation />}
+        {isAuthenticated && user?.role_name === 'Trader' && <RenewalReminder />}
         
         <Routes>
           {/* Public Routes */}
