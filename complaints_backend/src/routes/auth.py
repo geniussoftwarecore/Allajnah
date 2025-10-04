@@ -37,6 +37,28 @@ def token_required(f):
         except jwt.InvalidTokenError:
             return jsonify({'message': 'رمز التوثيق غير صالح'}), 401
         
+        subscription_exempt_routes = [
+            '/api/subscription/status',
+            '/api/payment-methods',
+            '/api/subscription-price',
+            '/api/payment/submit',
+            '/api/payment/receipt'
+        ]
+        
+        if current_user.role.role_name == 'Trader':
+            if not any(request.path.startswith(route) for route in subscription_exempt_routes):
+                from src.models.complaint import Subscription
+                active_subscription = Subscription.query.filter_by(
+                    user_id=current_user.user_id,
+                    status='active'
+                ).filter(Subscription.end_date > datetime.utcnow()).first()
+                
+                if not active_subscription:
+                    return jsonify({
+                        'message': 'يجب تفعيل الاشتراك للوصول إلى هذه الميزة',
+                        'requires_subscription': True
+                    }), 403
+        
         return f(current_user, *args, **kwargs)
     
     return decorated
@@ -50,6 +72,26 @@ def role_required(required_roles):
             return f(current_user, *args, **kwargs)
         return decorated
     return decorator
+
+def subscription_required(f):
+    @wraps(f)
+    def decorated(current_user, *args, **kwargs):
+        if current_user.role.role_name == 'Trader':
+            from src.models.complaint import Subscription
+            active_subscription = Subscription.query.filter_by(
+                user_id=current_user.user_id,
+                status='active'
+            ).filter(Subscription.end_date > datetime.utcnow()).first()
+            
+            if not active_subscription:
+                return jsonify({
+                    'message': 'يجب تفعيل الاشتراك للوصول إلى هذه الميزة',
+                    'requires_subscription': True
+                }), 403
+        
+        return f(current_user, *args, **kwargs)
+    
+    return decorated
 
 @auth_bp.route('/register', methods=['POST'])
 def register():

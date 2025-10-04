@@ -100,6 +100,18 @@ const Navigation = () => {
       roles: ['Technical Committee', 'Higher Committee']
     },
     {
+      label: 'مراجعة المدفوعات',
+      path: '/admin/payments',
+      icon: FileText,
+      roles: ['Technical Committee', 'Higher Committee']
+    },
+    {
+      label: 'إعدادات الاشتراك',
+      path: '/admin/payment-settings',
+      icon: Settings,
+      roles: ['Technical Committee', 'Higher Committee']
+    },
+    {
       label: 'الإعدادات',
       path: '/settings',
       icon: Settings,

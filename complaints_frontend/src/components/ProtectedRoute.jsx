@@ -1,13 +1,43 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
 
 const ProtectedRoute = ({ children, requiredRoles = [] }) => {
   const { isAuthenticated, user, loading } = useAuth();
   const location = useLocation();
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null);
+  const [checkingSubscription, setCheckingSubscription] = useState(true);
+
+  useEffect(() => {
+    const checkSubscription = async () => {
+      if (isAuthenticated && user?.role_name === 'Trader') {
+        const subscriptionPages = ['/subscription-gate', '/payment'];
+        if (subscriptionPages.includes(location.pathname)) {
+          setCheckingSubscription(false);
+          return;
+        }
+
+        try {
+          const token = localStorage.getItem('token');
+          const response = await axios.get('/api/subscription/status', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setSubscriptionStatus(response.data);
+        } catch (error) {
+          console.error('Error checking subscription:', error);
+        }
+      }
+      setCheckingSubscription(false);
+    };
+
+    if (!loading) {
+      checkSubscription();
+    }
+  }, [isAuthenticated, user, loading, location.pathname]);
 
   // Show loading spinner while checking authentication
-  if (loading) {
+  if (loading || (isAuthenticated && user?.role_name === 'Trader' && checkingSubscription)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -48,6 +78,18 @@ const ProtectedRoute = ({ children, requiredRoles = [] }) => {
         </div>
       </div>
     );
+  }
+
+  // Check subscription status for Traders
+  const subscriptionPages = ['/subscription-gate', '/payment'];
+  if (
+    user?.role_name === 'Trader' && 
+    !subscriptionPages.includes(location.pathname) && 
+    subscriptionStatus && 
+    !subscriptionStatus.has_active_subscription &&
+    !subscriptionStatus.has_pending_payment
+  ) {
+    return <Navigate to="/subscription-gate" replace />;
   }
 
   return children;

@@ -3,7 +3,7 @@ from datetime import datetime
 import os
 from werkzeug.utils import secure_filename
 from src.models.complaint import db, Complaint, ComplaintCategory, ComplaintStatus, ComplaintAttachment, ComplaintComment, Notification, User
-from src.routes.auth import token_required, role_required
+from src.routes.auth import token_required, role_required, subscription_required
 
 complaint_bp = Blueprint('complaint', __name__)
 
@@ -31,6 +31,7 @@ def create_notification(user_id, complaint_id, message, notification_type):
 @complaint_bp.route('/complaints', methods=['POST'])
 @token_required
 @role_required(['Trader'])
+@subscription_required
 def create_complaint(current_user):
     try:
         data = request.get_json()
@@ -87,6 +88,7 @@ def create_complaint(current_user):
 
 @complaint_bp.route('/complaints', methods=['GET'])
 @token_required
+@subscription_required
 def get_complaints(current_user):
     try:
         page = request.args.get('page', 1, type=int)

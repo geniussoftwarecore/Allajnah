@@ -228,3 +228,114 @@ class AuditLog(db.Model):
             'ip_address': self.ip_address,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
+
+class Subscription(db.Model):
+    __tablename__ = 'subscriptions'
+    
+    subscription_id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.String(36), db.ForeignKey('users.user_id'), nullable=False)
+    start_date = db.Column(db.DateTime, nullable=False)
+    end_date = db.Column(db.DateTime, nullable=False)
+    status = db.Column(db.String(20), default='active')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    user = db.relationship('User', backref='subscriptions', lazy=True)
+    
+    def to_dict(self):
+        return {
+            'subscription_id': self.subscription_id,
+            'user_id': self.user_id,
+            'start_date': self.start_date.isoformat() if self.start_date else None,
+            'end_date': self.end_date.isoformat() if self.end_date else None,
+            'status': self.status,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+class PaymentMethod(db.Model):
+    __tablename__ = 'payment_methods'
+    
+    method_id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = db.Column(db.String(255), nullable=False)
+    account_number = db.Column(db.String(255), nullable=False)
+    account_holder = db.Column(db.String(255), nullable=False)
+    qr_image_path = db.Column(db.String(500))
+    notes = db.Column(db.Text)
+    is_active = db.Column(db.Boolean, default=True)
+    display_order = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def to_dict(self):
+        return {
+            'method_id': self.method_id,
+            'name': self.name,
+            'account_number': self.account_number,
+            'account_holder': self.account_holder,
+            'qr_image_path': self.qr_image_path,
+            'notes': self.notes,
+            'is_active': self.is_active,
+            'display_order': self.display_order,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+class Payment(db.Model):
+    __tablename__ = 'payments'
+    
+    payment_id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.String(36), db.ForeignKey('users.user_id'), nullable=False)
+    method_id = db.Column(db.String(36), db.ForeignKey('payment_methods.method_id'), nullable=False)
+    sender_name = db.Column(db.String(255), nullable=False)
+    sender_phone = db.Column(db.String(50), nullable=False)
+    transaction_reference = db.Column(db.String(255))
+    amount = db.Column(db.Float, nullable=False)
+    payment_date = db.Column(db.DateTime, nullable=False)
+    receipt_image_path = db.Column(db.String(500), nullable=False)
+    status = db.Column(db.String(20), default='pending')
+    reviewed_by_id = db.Column(db.String(36), db.ForeignKey('users.user_id'))
+    review_notes = db.Column(db.Text)
+    reviewed_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    user = db.relationship('User', foreign_keys=[user_id], backref='payments')
+    payment_method = db.relationship('PaymentMethod', backref='payments')
+    reviewed_by = db.relationship('User', foreign_keys=[reviewed_by_id])
+    
+    def to_dict(self):
+        return {
+            'payment_id': self.payment_id,
+            'user_id': self.user_id,
+            'user_name': self.user.full_name if self.user else None,
+            'method_id': self.method_id,
+            'method_name': self.payment_method.name if self.payment_method else None,
+            'sender_name': self.sender_name,
+            'sender_phone': self.sender_phone,
+            'transaction_reference': self.transaction_reference,
+            'amount': self.amount,
+            'payment_date': self.payment_date.isoformat() if self.payment_date else None,
+            'receipt_image_path': self.receipt_image_path,
+            'status': self.status,
+            'reviewed_by_id': self.reviewed_by_id,
+            'reviewed_by_name': self.reviewed_by.full_name if self.reviewed_by else None,
+            'review_notes': self.review_notes,
+            'reviewed_at': self.reviewed_at.isoformat() if self.reviewed_at else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+class Settings(db.Model):
+    __tablename__ = 'settings'
+    
+    setting_id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    key = db.Column(db.String(100), unique=True, nullable=False)
+    value = db.Column(db.Text, nullable=False)
+    description = db.Column(db.Text)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def to_dict(self):
+        return {
+            'setting_id': self.setting_id,
+            'key': self.key,
+            'value': self.value,
+            'description': self.description,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }

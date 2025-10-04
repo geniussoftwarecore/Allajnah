@@ -10,6 +10,10 @@ import ComplaintsList from './components/ComplaintsList';
 import NewComplaint from './components/NewComplaint';
 import Reports from './components/Reports';
 import UserManagement from './components/UserManagement';
+import SubscriptionGate from './components/SubscriptionGate';
+import PaymentPage from './components/PaymentPage';
+import PaymentReview from './components/PaymentReview';
+import PaymentSettings from './components/PaymentSettings';
 import './App.css';
 
 // Axios will use Vite's proxy configuration for /api requests
@@ -35,6 +39,24 @@ function AppContent() {
             path="/register" 
             element={
               isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />
+            } 
+          />
+          
+          {/* Subscription Routes */}
+          <Route 
+            path="/subscription-gate" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGate />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/payment" 
+            element={
+              <ProtectedRoute>
+                <PaymentPage />
+              </ProtectedRoute>
             } 
           />
           
@@ -72,6 +94,22 @@ function AppContent() {
             element={
               <ProtectedRoute requiredRoles={['Technical Committee', 'Higher Committee']}>
                 <UserManagement />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/payments" 
+            element={
+              <ProtectedRoute requiredRoles={['Technical Committee', 'Higher Committee']}>
+                <PaymentReview />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/payment-settings" 
+            element={
+              <ProtectedRoute requiredRoles={['Technical Committee', 'Higher Committee']}>
+                <PaymentSettings />
               </ProtectedRoute>
             } 
           />
