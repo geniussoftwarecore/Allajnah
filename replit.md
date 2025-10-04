@@ -80,6 +80,32 @@ The deployment process:
 
 ## Recent Changes
 
+### Oct 4, 2025 - Renewal and Notification System
+- **Complete Renewal and Alert System Implemented**:
+  - Database Enhancements: Added renewal tracking fields to Subscription model (is_renewal, grace_period_enabled, notified_14d, notified_7d, notified_3d)
+  - Grace Period Support: Configurable grace period (default 7 days) after subscription expiry
+  - Renewal Reminders: Automatic notifications at 14, 7, and 3 days before expiry
+  - Settings Expansion: Added currency, grace_period_days, and enable_grace_period settings
+  
+- **Admin Features**:
+  - Manual trigger for renewal reminders (/api/admin/check-renewals)
+  - Settings initialization endpoint (/api/admin/init-settings)
+  - Renewal status checking endpoint (/api/renewal/check)
+  - Currency configuration (YER, USD, SAR)
+  - Grace period toggle and duration settings
+  
+- **Frontend Components**:
+  - RenewalReminder: In-app banner showing expiry warnings and grace period status
+  - Enhanced PaymentSettings: Added currency selection and grace period configuration
+  - Dynamic reminder display based on days remaining
+
+- **Renewal Flow**:
+  1. System sends notifications at 14, 7, and 3 days before expiry
+  2. In-app banner alerts traders about upcoming renewal
+  3. After expiry, grace period allows continued access (if enabled)
+  4. Payment approval automatically creates renewal subscription
+  5. Renewal subscriptions are properly tracked and linked to previous subscriptions
+
 ### Oct 4, 2025 - Annual Subscription Payment System
 - **Complete Subscription Gateway Implemented**:
   - Database Models: Subscription, Payment, PaymentMethod, Settings
