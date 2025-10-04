@@ -55,5 +55,5 @@ externalPort = 3000
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
-build = ["bash", "-c", "cd complaints_frontend && pnpm install && pnpm run build && rm -rf ../complaints_backend/src/static/* && cp -r dist/* ../complaints_backend/src/static/"]
+run = ["gunicorn", "--bind", "0.0.0.0:5000", "--reuse-port", "--chdir", "complaints_backend", "wsgi:app"]
+build = ["bash", "-c", "cd complaints_frontend && pnpm install && pnpm run build && mkdir -p ../complaints_backend/src/static && cp -r dist/* ../complaints_backend/src/static/"]
