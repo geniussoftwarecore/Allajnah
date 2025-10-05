@@ -54,14 +54,13 @@ const SubscriptionGate = () => {
               <Clock className="w-8 h-8 text-yellow-600" />
             </div>
             <CardTitle className="text-2xl">بانتظار المراجعة</CardTitle>
-            <CardDescription>طلب الدفع الخاص بك قيد المراجعة</CardDescription>
+            <CardDescription>طلبك قيد المراجعة. سنبلغك بالنتيجة قريبًا.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                تم استلام إثبات الدفع الخاص بك وهو حالياً قيد المراجعة من قبل الإدارة. 
-                سيتم إشعارك فور اعتماد الدفع وتفعيل اشتراكك.
+                تم استلام إثبات الدفع الخاص بك. سنبلغك بالنتيجة قريبًا.
               </AlertDescription>
             </Alert>
             
@@ -102,9 +101,9 @@ const SubscriptionGate = () => {
           <div className="mx-auto mb-4 w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
             <CheckCircle className="w-10 h-10 text-blue-600" />
           </div>
-          <CardTitle className="text-3xl mb-2">مرحباً بك في نظام الشكاوى الإلكتروني</CardTitle>
+          <CardTitle className="text-3xl mb-2">اشتراك سنوي لتفعيل حسابك</CardTitle>
           <CardDescription className="text-lg">
-            للوصول إلى جميع ميزات النظام، يتطلب اشتراك سنوي
+            يتطلب استخدام النظام اشتراكًا سنويًا. اضغط (اشترك الآن) للانتقال لخيارات الدفع.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

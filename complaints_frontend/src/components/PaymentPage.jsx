@@ -101,7 +101,7 @@ const PaymentPage = () => {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">إثبات الدفع</CardTitle>
-              <CardDescription>يرجى ملء البيانات التالية وإرفاق صورة الإيصال</CardDescription>
+              <CardDescription>أدخل معلومات التحويل وارفع صورة الإيصال. سنراجع الطلب خلال وقت قصير.</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">

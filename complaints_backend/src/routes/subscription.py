@@ -211,10 +211,9 @@ def approve_payment(current_user, payment_id):
         payment.reviewed_at = datetime.utcnow()
         payment.review_notes = request.json.get('notes', '') if request.json else ''
         
-        renewal_text = 'تجديد' if is_renewal else 'اشتراك جديد'
         notification = Notification(
             user_id=user.user_id,
-            message=f'تم اعتماد دفعتك بنجاح! {renewal_text} ساري حتى {end_date.strftime("%Y-%m-%d")}',
+            message='تم تفعيل اشتراكك بنجاح! استمتع بكامل مزايا النظام.',
             type='payment_approved'
         )
         
