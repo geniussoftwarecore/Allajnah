@@ -1,4 +1,4 @@
-modules = ["cpp-clang14", "nodejs-20", "c-clang14", "python-3.11", "postgresql-16", "python3"]
+modules = ["python-3.11", "cpp-clang14", "nodejs-20", "c-clang14"]
 [agent]
 expertMode = true
 
@@ -16,31 +16,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Backend"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Frontend"
+args = "Application"
 
 [[workflows.workflow]]
-name = "Backend"
+name = "Application"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd complaints_backend && python src/main.py"
-waitForPort = 8000
-
-[workflows.workflow.metadata]
-outputType = "console"
-
-[[workflows.workflow]]
-name = "Frontend"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd complaints_frontend && pnpm run dev"
+args = "gunicorn --bind 0.0.0.0:8000 --reuse-port --reload main:app & cd complaints_frontend && pnpm run dev"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -51,12 +35,20 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
+localPort = 8000
+externalPort = 8000
+
+[[ports]]
 localPort = 35271
 externalPort = 3003
 
 [[ports]]
 localPort = 35913
 externalPort = 3002
+
+[[ports]]
+localPort = 38999
+externalPort = 4200
 
 [[ports]]
 localPort = 40817
