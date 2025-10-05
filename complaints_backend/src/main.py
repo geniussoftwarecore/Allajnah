@@ -28,7 +28,7 @@ limiter = Limiter(
     default_limits=[os.environ.get('RATELIMIT_DEFAULT', '200 per day;50 per hour')]
 )
 
-app.limiter = limiter
+app.limiter = limiter  # type: ignore
 
 app.register_blueprint(user_bp, url_prefix='/api')
 app.register_blueprint(complaint_bp, url_prefix='/api')
