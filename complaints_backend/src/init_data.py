@@ -13,8 +13,12 @@ from flask import Flask
 
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database', 'app.db')}"
+    app.config['SECRET_KEY'] = os.environ.get('SESSION_SECRET', 'asdf#FGSgvasgf$5$WGT')
+    
+    database_url = os.environ.get('DATABASE_URL', 
+                                  f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database', 'app.db')}")
+    
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
     return app
