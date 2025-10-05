@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from src.database.db import db
-from src.models.complaint import Subscription, Notification
+from src.models.complaint import Subscription, Notification, Settings
 
 def check_and_expire_subscriptions():
     """
@@ -13,10 +13,15 @@ def check_and_expire_subscriptions():
         
         active_subscriptions = Subscription.query.filter_by(status='active').all()
         
+        grace_period_setting = Settings.query.filter_by(key='grace_period_days').first()
+        grace_period_days = int(grace_period_setting.value) if grace_period_setting else 7
+        
+        enable_grace_period = Settings.query.filter_by(key='enable_grace_period').first()
+        global_grace_enabled = enable_grace_period.value.lower() == 'true' if enable_grace_period else True
+        
         for subscription in active_subscriptions:
-            grace_period_days = 7
-            if subscription.grace_period_enabled:
-                expiry_with_grace = subscription.end_date
+            if global_grace_enabled and subscription.grace_period_enabled:
+                expiry_with_grace = subscription.end_date + timedelta(days=grace_period_days)
             else:
                 expiry_with_grace = subscription.end_date
             

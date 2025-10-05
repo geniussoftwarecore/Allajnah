@@ -52,10 +52,13 @@ def token_required(f):
         
         subscription_exempt_routes = [
             '/api/subscription/status',
+            '/api/subscription/me',
             '/api/payment-methods',
             '/api/subscription-price',
             '/api/payment/submit',
-            '/api/payment/receipt'
+            '/api/payment/receipt',
+            '/api/payments',
+            '/api/renewal/check'
         ]
         
         if current_user.role.role_name == 'Trader':
