@@ -29,6 +29,7 @@ author = "agent"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd complaints_backend && python src/main.py"
+waitForPort = 8000
 
 [workflows.workflow.metadata]
 outputType = "console"
@@ -48,6 +49,10 @@ outputType = "webview"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 33289
+externalPort = 4200
 
 [[ports]]
 localPort = 35271
