@@ -4,7 +4,7 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
-packages = ["file", "openssl", "postgresql"]
+packages = ["file", "libxcrypt", "openssl", "postgresql"]
 
 [workflows]
 runButton = "Project"
@@ -52,10 +52,6 @@ externalPort = 80
 [[ports]]
 localPort = 35913
 externalPort = 3002
-
-[[ports]]
-localPort = 38427
-externalPort = 3003
 
 [[ports]]
 localPort = 40817
