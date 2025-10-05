@@ -16,19 +16,16 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Application"
+args = "Start application"
 
 [[workflows.workflow]]
-name = "Application"
+name = "Start application"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "gunicorn --bind 0.0.0.0:8000 --reuse-port --reload main:app & cd complaints_frontend && pnpm run dev"
+args = "gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app"
 waitForPort = 5000
-
-[workflows.workflow.metadata]
-outputType = "webview"
 
 [[ports]]
 localPort = 5000
@@ -41,6 +38,10 @@ externalPort = 8000
 [[ports]]
 localPort = 35271
 externalPort = 3003
+
+[[ports]]
+localPort = 35705
+externalPort = 5000
 
 [[ports]]
 localPort = 35913
