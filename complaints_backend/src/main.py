@@ -12,6 +12,7 @@ from src.routes.user import user_bp
 from src.routes.complaint import complaint_bp
 from src.routes.auth import auth_bp
 from src.routes.subscription import subscription_bp
+from src.routes.subscription_v2 import subscription_v2_bp
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 app.config['SECRET_KEY'] = os.environ.get('SESSION_SECRET', 'dev-secret-key-please-change-in-production')
@@ -33,6 +34,7 @@ app.register_blueprint(user_bp, url_prefix='/api')
 app.register_blueprint(complaint_bp, url_prefix='/api')
 app.register_blueprint(auth_bp, url_prefix='/api')
 app.register_blueprint(subscription_bp, url_prefix='/api')
+app.register_blueprint(subscription_v2_bp, url_prefix='/api')
 
 # uncomment if you need to use database
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database', 'app.db')}"
