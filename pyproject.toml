@@ -21,4 +21,5 @@ dependencies = [
     "pydantic[email]>=2.11.10",
     "boto3>=1.40.45",
     "flask-caching>=2.3.1",
+    "pytest-cov>=7.0.0",
 ]

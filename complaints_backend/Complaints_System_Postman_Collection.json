@@ -1,0 +1,565 @@
+{
+  "info": {
+    "name": "نظام الشكاوى الإلكتروني - Complaints System API",
+    "description": "مجموعة Postman كاملة لاختبار جميع endpoints نظام الاشتراكات والدفع",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "2.0.0"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "trader_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "payment_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "method_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Register New User (Trader)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('user_id', response.user.user_id);",
+                  "    pm.test('User registered successfully', () => {",
+                  "        pm.expect(response.user.role_name).to.eql('Trader');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"trader_{{$randomInt}}\",\n    \"email\": \"trader_{{$randomInt}}@example.ye\",\n    \"password\": \"SecurePass123!\",\n    \"full_name\": \"أحمد محمد التاجر\",\n    \"phone_number\": \"777123456\",\n    \"address\": \"صنعاء - اليمن\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/register",
+              "host": ["{{base_url}}"],
+              "path": ["register"]
+            }
+          }
+        },
+        {
+          "name": "Login as Trader",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('trader_token', response.token);",
+                  "    pm.test('Login successful', () => {",
+                  "        pm.expect(response.token).to.exist;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"trader_test\",\n    \"password\": \"SecurePass123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            }
+          }
+        },
+        {
+          "name": "Login as Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('admin_token', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"admin\",\n    \"password\": \"admin123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Subscription Status",
+      "item": [
+        {
+          "name": "Check Subscription Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{trader_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/subscription/status",
+              "host": ["{{base_url}}"],
+              "path": ["subscription", "status"]
+            }
+          }
+        },
+        {
+          "name": "Get Subscription Price",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{trader_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/subscription-price",
+              "host": ["{{base_url}}"],
+              "path": ["subscription-price"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Payment Methods",
+      "item": [
+        {
+          "name": "Get Payment Methods",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.payment_methods && response.payment_methods.length > 0) {",
+                  "        pm.collectionVariables.set('method_id', response.payment_methods[0].method_id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{trader_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payment-methods",
+              "host": ["{{base_url}}"],
+              "path": ["payment-methods"]
+            }
+          }
+        },
+        {
+          "name": "Add Payment Method (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"كاش يو\",\n    \"account_number\": \"777888999\",\n    \"account_holder\": \"نظام الشكاوى الإلكتروني\",\n    \"notes\": \"التحويل على هذا الرقم فقط\",\n    \"display_order\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/payment-methods",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "payment-methods"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Payment Submission",
+      "item": [
+        {
+          "name": "Submit Payment (with Receipt)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('payment_id', response.payment.payment_id);",
+                  "    pm.test('Payment submitted', () => {",
+                  "        pm.expect(response.payment.status).to.eql('pending');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{trader_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "method_id",
+                  "value": "{{method_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "sender_name",
+                  "value": "أحمد محمد التاجر",
+                  "type": "text"
+                },
+                {
+                  "key": "sender_phone",
+                  "value": "777123456",
+                  "type": "text"
+                },
+                {
+                  "key": "transaction_reference",
+                  "value": "TRX-{{$randomInt}}",
+                  "type": "text"
+                },
+                {
+                  "key": "amount",
+                  "value": "10000",
+                  "type": "text"
+                },
+                {
+                  "key": "currency",
+                  "value": "YER",
+                  "type": "text"
+                },
+                {
+                  "key": "payment_date",
+                  "value": "{{$isoTimestamp}}",
+                  "type": "text"
+                },
+                {
+                  "key": "receipt",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/payment/submit",
+              "host": ["{{base_url}}"],
+              "path": ["payment", "submit"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Admin - Payment Review",
+      "item": [
+        {
+          "name": "Get All Payments (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/payments",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "payments"]
+            }
+          }
+        },
+        {
+          "name": "Get Pending Payments (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/payments?status=pending",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "payments"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Approve Payment (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Payment approved and subscription activated', () => {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"review_notes\": \"تم التحقق من الدفع والاعتماد بنجاح\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/payments/{{payment_id}}/approve",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "payments", "{{payment_id}}", "approve"]
+            }
+          }
+        },
+        {
+          "name": "Reject Payment (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"review_notes\": \"المبلغ المدفوع غير كافٍ. المطلوب 10,000 ريال يمني\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/payments/{{payment_id}}/reject",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "payments", "{{payment_id}}", "reject"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Subscription Access Control",
+      "item": [
+        {
+          "name": "Access Complaints (Blocked without Subscription)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{trader_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/complaints",
+              "host": ["{{base_url}}"],
+              "path": ["complaints"]
+            }
+          }
+        },
+        {
+          "name": "Access Complaints (Allowed with Subscription)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Access granted after subscription', () => {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{trader_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/complaints",
+              "host": ["{{base_url}}"],
+              "path": ["complaints"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Notifications",
+      "item": [
+        {
+          "name": "Get User Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{trader_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications",
+              "host": ["{{base_url}}"],
+              "path": ["notifications"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Admin Settings",
+      "item": [
+        {
+          "name": "Get All Settings (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/settings",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "settings"]
+            }
+          }
+        },
+        {
+          "name": "Update Subscription Price (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"key\": \"subscription_price\",\n    \"value\": \"15000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/settings",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "settings"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
