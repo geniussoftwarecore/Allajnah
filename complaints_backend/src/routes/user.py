@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from src.database.db import db
-from src.models.complaint import User, Role, AuditLog
+from src.models.complaint import User, Role, AuditLog, Notification
 from werkzeug.security import generate_password_hash
 from src.routes.auth import token_required, role_required
 from datetime import datetime
@@ -299,3 +299,80 @@ def get_audit_logs(current_user):
         
     except Exception as e:
         return jsonify({'message': f'خطأ في جلب سجل التدقيق: {str(e)}'}), 500
+
+@user_bp.route('/notifications', methods=['GET'])
+@token_required
+def get_notifications(current_user):
+    """Get current user's notifications"""
+    try:
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 20, type=int)
+        unread_only = request.args.get('unread_only', 'false').lower() == 'true'
+        
+        query = Notification.query.filter_by(user_id=current_user.user_id)
+        
+        if unread_only:
+            query = query.filter_by(is_read=False)
+        
+        pagination = query.order_by(Notification.created_at.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        unread_count = Notification.query.filter_by(
+            user_id=current_user.user_id,
+            is_read=False
+        ).count()
+        
+        return jsonify({
+            'notifications': [notif.to_dict() for notif in pagination.items],
+            'total': pagination.total,
+            'pages': pagination.pages,
+            'current_page': page,
+            'unread_count': unread_count
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'خطأ في جلب الإشعارات: {str(e)}'}), 500
+
+@user_bp.route('/notifications/<notification_id>/read', methods=['PUT'])
+@token_required
+def mark_notification_read(current_user, notification_id):
+    """Mark a notification as read"""
+    try:
+        notification = Notification.query.get(notification_id)
+        
+        if not notification:
+            return jsonify({'message': 'الإشعار غير موجود'}), 404
+        
+        if notification.user_id != current_user.user_id:
+            return jsonify({'message': 'غير مصرح'}), 403
+        
+        notification.is_read = True
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'تم تحديد الإشعار كمقروء',
+            'notification': notification.to_dict()
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'خطأ في تحديث الإشعار: {str(e)}'}), 500
+
+@user_bp.route('/notifications/mark-all-read', methods=['PUT'])
+@token_required
+def mark_all_notifications_read(current_user):
+    """Mark all notifications as read"""
+    try:
+        Notification.query.filter_by(
+            user_id=current_user.user_id,
+            is_read=False
+        ).update({'is_read': True})
+        
+        db.session.commit()
+        
+        return jsonify({'message': 'تم تحديد جميع الإشعارات كمقروءة'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'خطأ في تحديث الإشعارات: {str(e)}'}), 500
