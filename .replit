@@ -16,28 +16,39 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Start application"
+args = "Backend Server"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Frontend App"
 
 [[workflows.workflow]]
-name = "Start application"
+name = "Backend Server"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app"
+args = "cd complaints_backend && python src/main.py"
+waitForPort = 8000
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow]]
+name = "Frontend App"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd complaints_frontend && pnpm run dev"
 waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 8000
-externalPort = 8000
-
-[[ports]]
-localPort = 35271
-externalPort = 3003
 
 [[ports]]
 localPort = 35913
@@ -52,7 +63,7 @@ localPort = 40817
 externalPort = 3001
 
 [[ports]]
-localPort = 41755
+localPort = 41647
 externalPort = 5000
 
 [[ports]]
